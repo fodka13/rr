@@ -1,0 +1,1 @@
+{"version":3,"file":"updateUserBody.d.ts","sourceRoot":"","sources":["../../../src/generated/types/updateUserBody.ts"],"names":[],"mappings":"AAAA;;;;;;GAMG;AACH,OAAO,KAAK,EAAE,kBAAkB,EAAE,MAAM,sBAAsB,CAAC;AAE/D,MAAM,WAAW,cAAc;IAC7B,WAAW,CAAC,EAAE,MAAM,CAAC;IACrB,SAAS,CAAC,EAAE,MAAM,CAAC;IACnB,IAAI,CAAC,EAAE,kBAAkB,CAAC;CAC3B"}

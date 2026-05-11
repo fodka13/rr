@@ -1,0 +1,1 @@
+{"version":3,"file":"updateCategoryBody.d.ts","sourceRoot":"","sources":["../../../src/generated/types/updateCategoryBody.ts"],"names":[],"mappings":"AAAA;;;;;;GAMG;AACH,OAAO,KAAK,EAAE,sBAAsB,EAAE,MAAM,0BAA0B,CAAC;AAEvE,MAAM,WAAW,kBAAkB;IACjC,IAAI,CAAC,EAAE,MAAM,CAAC;IACd,IAAI,CAAC,EAAE,MAAM,CAAC;IACd,IAAI,CAAC,EAAE,sBAAsB,CAAC;IAC9B,SAAS,CAAC,EAAE,MAAM,CAAC;CACpB"}
