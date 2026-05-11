@@ -1,0 +1,1239 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: Portfolio CMS API specification
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: auth
+    description: Authentication
+  - name: users
+    description: User management
+  - name: categories
+    description: Category management
+  - name: works
+    description: Portfolio works
+  - name: blogs
+    description: Blog posts
+  - name: comments
+    description: Comments
+  - name: featured
+    description: Featured content management
+  - name: stats
+    description: Site statistics
+  - name: visitors
+    description: Visitor tracking
+  - name: storage
+    description: Object storage upload and serving endpoints
+
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /auth/register:
+    post:
+      operationId: register
+      tags: [auth]
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterBody"
+      responses:
+        "201":
+          description: User created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+
+  /auth/login:
+    post:
+      operationId: login
+      tags: [auth]
+      summary: Login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginBody"
+      responses:
+        "200":
+          description: Logged in
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+
+  /auth/logout:
+    post:
+      operationId: logout
+      tags: [auth]
+      summary: Logout
+      responses:
+        "200":
+          description: Logged out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  /auth/me:
+    get:
+      operationId: getMe
+      tags: [auth]
+      summary: Get current user
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /users:
+    get:
+      operationId: listUsers
+      tags: [users]
+      summary: List all users (admin only)
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: role
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of users
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserListResponse"
+
+  /users/{id}:
+    get:
+      operationId: getUser
+      tags: [users]
+      parameters:
+        - $ref: "#/components/parameters/IdParam"
+      responses:
+        "200":
+          description: User
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+    patch:
+      operationId: updateUser
+      tags: [users]
+      parameters:
+        - $ref: "#/components/parameters/IdParam"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateUserBody"
+      responses:
+        "200":
+          description: Updated user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+  /users/{id}/ban:
+    post:
+      operationId: banUser
+      tags: [users]
+      parameters:
+        - $ref: "#/components/parameters/IdParam"
+      responses:
+        "200":
+          description: User banned
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  /users/{id}/unban:
+    post:
+      operationId: unbanUser
+      tags: [users]
+      parameters:
+        - $ref: "#/components/parameters/IdParam"
+      responses:
+        "200":
+          description: User unbanned
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  /categories:
+    get:
+      operationId: listCategories
+      tags: [categories]
+      summary: List all categories
+      parameters:
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [work, blog, all]
+            default: all
+      responses:
+        "200":
+          description: List of categories
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Category"
+    post:
+      operationId: createCategory
+      tags: [categories]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCategoryBody"
+      responses:
+        "201":
+          description: Created category
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Category"
+
+  /categories/{id}:
+    get:
+      operationId: getCategory
+      tags: [categories]
+      parameters:
+        - $ref: "#/components/parameters/IdParam"
+      responses:
+        "200":
+          description: Category
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Category"
+    patch:
+      operationId: updateCategory
+      tags: [categories]
+      parameters:
+        - $ref: "#/components/parameters/IdParam"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateCategoryBody"
+      responses:
+        "200":
+          description: Updated category
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Category"
+    delete:
+      operationId: deleteCategory
+      tags: [categories]
+      parameters:
+        - $ref: "#/components/parameters/IdParam"
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  /categories/reorder:
+    patch:
+      operationId: reorderCategories
+      tags: [categories]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReorderCategoriesBody"
+      responses:
+        "200":
+          description: Reordered
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  /works:
+    get:
+      operationId: listWorks
+      tags: [works]
+      summary: List portfolio works
+      parameters:
+        - name: categoryId
+          in: query
+          schema:
+            type: integer
+        - name: featured
+          in: query
+          schema:
+            type: boolean
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        "200":
+          description: List of works
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkListResponse"
+    post:
+      operationId: createWork
+      tags: [works]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateWorkBody"
+      responses:
+        "201":
+          description: Created work
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Work"
+
+  /works/{id}:
+    get:
+      operationId: getWork
+      tags: [works]
+      parameters:
+        - $ref: "#/components/parameters/IdParam"
+      responses:
+        "200":
+          description: Work
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Work"
+    patch:
+      operationId: updateWork
+      tags: [works]
+      parameters:
+        - $ref: "#/components/parameters/IdParam"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateWorkBody"
+      responses:
+        "200":
+          description: Updated work
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Work"
+    delete:
+      operationId: deleteWork
+      tags: [works]
+      parameters:
+        - $ref: "#/components/parameters/IdParam"
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  /works/{id}/like:
+    post:
+      operationId: likeWork
+      tags: [works]
+      parameters:
+        - $ref: "#/components/parameters/IdParam"
+      responses:
+        "200":
+          description: Liked
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LikeResponse"
+
+  /blogs:
+    get:
+      operationId: listBlogs
+      tags: [blogs]
+      summary: List blog posts
+      parameters:
+        - name: categoryId
+          in: query
+          schema:
+            type: integer
+        - name: published
+          in: query
+          schema:
+            type: boolean
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 12
+      responses:
+        "200":
+          description: List of blogs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BlogListResponse"
+    post:
+      operationId: createBlog
+      tags: [blogs]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateBlogBody"
+      responses:
+        "201":
+          description: Created blog
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Blog"
+
+  /blogs/{id}:
+    get:
+      operationId: getBlog
+      tags: [blogs]
+      parameters:
+        - $ref: "#/components/parameters/IdParam"
+      responses:
+        "200":
+          description: Blog post
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Blog"
+    patch:
+      operationId: updateBlog
+      tags: [blogs]
+      parameters:
+        - $ref: "#/components/parameters/IdParam"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateBlogBody"
+      responses:
+        "200":
+          description: Updated blog
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Blog"
+    delete:
+      operationId: deleteBlog
+      tags: [blogs]
+      parameters:
+        - $ref: "#/components/parameters/IdParam"
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  /blogs/{id}/like:
+    post:
+      operationId: likeBlog
+      tags: [blogs]
+      parameters:
+        - $ref: "#/components/parameters/IdParam"
+      responses:
+        "200":
+          description: Liked
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LikeResponse"
+
+  /comments:
+    get:
+      operationId: listComments
+      tags: [comments]
+      parameters:
+        - name: targetType
+          in: query
+          schema:
+            type: string
+            enum: [blog, work]
+        - name: targetId
+          in: query
+          schema:
+            type: integer
+        - name: featured
+          in: query
+          schema:
+            type: boolean
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        "200":
+          description: List of comments
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CommentListResponse"
+    post:
+      operationId: createComment
+      tags: [comments]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCommentBody"
+      responses:
+        "201":
+          description: Created comment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Comment"
+
+  /comments/{id}:
+    delete:
+      operationId: deleteComment
+      tags: [comments]
+      parameters:
+        - $ref: "#/components/parameters/IdParam"
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  /comments/{id}/feature:
+    post:
+      operationId: featureComment
+      tags: [comments]
+      parameters:
+        - $ref: "#/components/parameters/IdParam"
+      responses:
+        "200":
+          description: Toggled feature status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Comment"
+
+  /featured/logos:
+    get:
+      operationId: listFeaturedLogos
+      tags: [featured]
+      summary: Get featured logos for homepage
+      responses:
+        "200":
+          description: Featured logos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Work"
+    put:
+      operationId: setFeaturedLogos
+      tags: [featured]
+      summary: Set featured logos (admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetFeaturedLogosBody"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  /featured/projects:
+    get:
+      operationId: listFeaturedProjects
+      tags: [featured]
+      summary: Get featured projects for homepage
+      responses:
+        "200":
+          description: Featured projects
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Work"
+
+  /featured/comments:
+    get:
+      operationId: listFeaturedComments
+      tags: [featured]
+      summary: Get pinned/featured comments
+      responses:
+        "200":
+          description: Featured comments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Comment"
+
+  /stats:
+    get:
+      operationId: getStats
+      tags: [stats]
+      summary: Get homepage statistics
+      responses:
+        "200":
+          description: Site stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SiteStats"
+
+  /visitors/track:
+    post:
+      operationId: trackVisitor
+      tags: [visitors]
+      summary: Track a page visit
+      responses:
+        "200":
+          description: Tracked
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  /storage/uploads/request-url:
+    post:
+      tags: [storage]
+      operationId: requestUploadUrl
+      summary: Request a presigned URL for file upload
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UploadUrlRequest'
+      responses:
+        '200':
+          description: Presigned upload URL generated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadUrlResponse'
+        '400':
+          description: Missing or invalid required fields.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '500':
+          description: Failed to generate upload URL.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+
+components:
+  parameters:
+    IdParam:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required: [status]
+
+    MessageResponse:
+      type: object
+      properties:
+        message:
+          type: string
+      required: [message]
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required: [error]
+
+    LikeResponse:
+      type: object
+      properties:
+        likes:
+          type: integer
+        liked:
+          type: boolean
+      required: [likes, liked]
+
+    RegisterBody:
+      type: object
+      properties:
+        username:
+          type: string
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+        displayName:
+          type: string
+      required: [username, email, password]
+
+    LoginBody:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+      required: [email, password]
+
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        username:
+          type: string
+        email:
+          type: string
+        displayName:
+          type: string
+          nullable: true
+        avatarUrl:
+          type: string
+          nullable: true
+        role:
+          type: string
+          enum: [super_admin, admin, editor, moderator, user]
+        isBanned:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, username, email, role, isBanned, createdAt]
+
+    AuthResponse:
+      type: object
+      properties:
+        user:
+          $ref: "#/components/schemas/User"
+        token:
+          type: string
+      required: [user, token]
+
+    UserListResponse:
+      type: object
+      properties:
+        users:
+          type: array
+          items:
+            $ref: "#/components/schemas/User"
+        total:
+          type: integer
+        page:
+          type: integer
+        limit:
+          type: integer
+      required: [users, total, page, limit]
+
+    UpdateUserBody:
+      type: object
+      properties:
+        displayName:
+          type: string
+        avatarUrl:
+          type: string
+        role:
+          type: string
+          enum: [super_admin, admin, editor, moderator, user]
+
+    Category:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        slug:
+          type: string
+        type:
+          type: string
+          enum: [work, blog, all]
+        sortOrder:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, name, slug, type, sortOrder, createdAt]
+
+    CreateCategoryBody:
+      type: object
+      properties:
+        name:
+          type: string
+        slug:
+          type: string
+        type:
+          type: string
+          enum: [work, blog, all]
+      required: [name, slug]
+
+    UpdateCategoryBody:
+      type: object
+      properties:
+        name:
+          type: string
+        slug:
+          type: string
+        type:
+          type: string
+          enum: [work, blog, all]
+        sortOrder:
+          type: integer
+
+    ReorderCategoriesBody:
+      type: object
+      properties:
+        ids:
+          type: array
+          items:
+            type: integer
+      required: [ids]
+
+    Work:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+          nullable: true
+        imageUrl:
+          type: string
+        thumbnailUrl:
+          type: string
+          nullable: true
+        images:
+          type: array
+          items:
+            $ref: "#/components/schemas/WorkMediaItem"
+          description: Additional gallery images/videos for the project
+        categoryId:
+          type: integer
+          nullable: true
+        category:
+          $ref: "#/components/schemas/Category"
+          nullable: true
+        tags:
+          type: array
+          items:
+            type: string
+        isFeatured:
+          type: boolean
+        isFeaturedLogo:
+          type: boolean
+        likes:
+          type: integer
+        sortOrder:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required: [id, title, imageUrl, images, tags, isFeatured, isFeaturedLogo, likes, sortOrder, createdAt, updatedAt]
+
+    WorkListResponse:
+      type: object
+      properties:
+        works:
+          type: array
+          items:
+            $ref: "#/components/schemas/Work"
+        total:
+          type: integer
+        page:
+          type: integer
+        limit:
+          type: integer
+      required: [works, total, page, limit]
+
+    CreateWorkBody:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        imageUrl:
+          type: string
+        thumbnailUrl:
+          type: string
+        images:
+          type: array
+          items:
+            $ref: "#/components/schemas/WorkMediaItem"
+        categoryId:
+          type: integer
+        tags:
+          type: array
+          items:
+            type: string
+        isFeatured:
+          type: boolean
+        isFeaturedLogo:
+          type: boolean
+        sortOrder:
+          type: integer
+      required: [title, imageUrl]
+
+    UpdateWorkBody:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        imageUrl:
+          type: string
+        thumbnailUrl:
+          type: string
+        images:
+          type: array
+          items:
+            $ref: "#/components/schemas/WorkMediaItem"
+        categoryId:
+          type: integer
+        tags:
+          type: array
+          items:
+            type: string
+        isFeatured:
+          type: boolean
+        isFeaturedLogo:
+          type: boolean
+        sortOrder:
+          type: integer
+
+    Blog:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        slug:
+          type: string
+        excerpt:
+          type: string
+          nullable: true
+        content:
+          type: string
+        thumbnailUrl:
+          type: string
+          nullable: true
+        categoryId:
+          type: integer
+          nullable: true
+        category:
+          $ref: "#/components/schemas/Category"
+          nullable: true
+        authorId:
+          type: integer
+        author:
+          $ref: "#/components/schemas/User"
+          nullable: true
+        isPublished:
+          type: boolean
+        likes:
+          type: integer
+        viewCount:
+          type: integer
+        publishedAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required: [id, title, slug, content, authorId, isPublished, likes, viewCount, createdAt, updatedAt]
+
+    BlogListResponse:
+      type: object
+      properties:
+        blogs:
+          type: array
+          items:
+            $ref: "#/components/schemas/Blog"
+        total:
+          type: integer
+        page:
+          type: integer
+        limit:
+          type: integer
+      required: [blogs, total, page, limit]
+
+    CreateBlogBody:
+      type: object
+      properties:
+        title:
+          type: string
+        slug:
+          type: string
+        excerpt:
+          type: string
+        content:
+          type: string
+        thumbnailUrl:
+          type: string
+        categoryId:
+          type: integer
+        isPublished:
+          type: boolean
+      required: [title, slug, content]
+
+    UpdateBlogBody:
+      type: object
+      properties:
+        title:
+          type: string
+        slug:
+          type: string
+        excerpt:
+          type: string
+        content:
+          type: string
+        thumbnailUrl:
+          type: string
+        categoryId:
+          type: integer
+        isPublished:
+          type: boolean
+
+    Comment:
+      type: object
+      properties:
+        id:
+          type: integer
+        content:
+          type: string
+        targetType:
+          type: string
+          enum: [blog, work]
+        targetId:
+          type: integer
+        authorId:
+          type: integer
+        author:
+          $ref: "#/components/schemas/User"
+          nullable: true
+        isFeatured:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, content, targetType, targetId, authorId, isFeatured, createdAt]
+
+    CommentListResponse:
+      type: object
+      properties:
+        comments:
+          type: array
+          items:
+            $ref: "#/components/schemas/Comment"
+        total:
+          type: integer
+        page:
+          type: integer
+        limit:
+          type: integer
+      required: [comments, total, page, limit]
+
+    CreateCommentBody:
+      type: object
+      properties:
+        content:
+          type: string
+        targetType:
+          type: string
+          enum: [blog, work]
+        targetId:
+          type: integer
+      required: [content, targetType, targetId]
+
+    SetFeaturedLogosBody:
+      type: object
+      properties:
+        workIds:
+          type: array
+          items:
+            type: integer
+          maxItems: 6
+      required: [workIds]
+
+    SiteStats:
+      type: object
+      properties:
+        visitorCount:
+          type: integer
+        worksCount:
+          type: integer
+        topClientsCount:
+          type: integer
+        partnersCount:
+          type: integer
+        blogsCount:
+          type: integer
+        categoriesCount:
+          type: integer
+      required: [visitorCount, worksCount, topClientsCount, partnersCount, blogsCount, categoriesCount]
+
+    WorkMediaItem:
+      type: object
+      properties:
+        url:
+          type: string
+          description: URL or object path of the media file
+        caption:
+          type: string
+          description: Caption or description for this media item
+        type:
+          type: string
+          enum: [image, video]
+          description: Media type
+      required: [url, caption, type]
+
+    UploadUrlRequest:
+      type: object
+      required: [name, size, contentType]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          description: Original file name.
+        size:
+          type: integer
+          minimum: 1
+          description: File size in bytes.
+        contentType:
+          type: string
+          minLength: 1
+          description: MIME type of the file.
+
+    UploadUrlResponse:
+      type: object
+      required: [uploadURL, objectPath]
+      properties:
+        uploadURL:
+          type: string
+          format: uri
+          description: Presigned GCS URL for PUT upload.
+        objectPath:
+          type: string
+          description: Normalized object path. Store this in your database.
+        metadata:
+          $ref: '#/components/schemas/UploadUrlRequest'
+
+    ErrorEnvelope:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
